@@ -1,0 +1,34 @@
+# Environment variables
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+.env/
+
+# Logs
+*.log
+
+# IDE files
+.vscode/
+.idea/
+
+# Testing cache
+.pytest_cache/
+
+# Docker
+docker-compose.override.yml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Vector DB / ML artifacts
+*.faiss
+*.pkl
+*.bin
+
+plan/
