@@ -1,1 +1,1 @@
-# This file is required to make 'routes' a package.
+from app.api.routes import auth, users, onboarding, goals, emissions, energy, water, dashboard
