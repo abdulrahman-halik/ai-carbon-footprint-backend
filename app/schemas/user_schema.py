@@ -16,6 +16,15 @@ class UserBase(BaseModel):
     email: Optional[EmailStr] = None
     full_name: Optional[str] = None
     is_active: Optional[bool] = True
+    onboarding_completed: Optional[bool] = False
+    profile: Optional[dict] = {}
+
+class OnboardingStart(BaseModel):
+    # This might be empty or contain initial setup data
+    pass
+
+class OnboardingComplete(BaseModel):
+    profile: dict
 
 class UserCreate(UserBase):
     email: EmailStr
