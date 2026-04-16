@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from app.api.routes import auth, users
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
 
 @asynccontextmanager
@@ -14,6 +15,9 @@ app = FastAPI(
     title="Sustainability Tracking Platform API",
     lifespan=lifespan
 )
+
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(users.router, prefix="/api/users", tags=["users"])
 
 @app.get("/")
 async def root():
