@@ -6,3 +6,4 @@ passlib
 pydantic-settings
 python-dotenv
 requests
+dnspython
