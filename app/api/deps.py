@@ -1,4 +1,5 @@
 from fastapi import Depends, HTTPException, status
+import logging
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from app.core.config import settings
@@ -17,12 +18,15 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:
+            logging.error("No sub in token payload")
             raise credentials_exception
         token_data = TokenData(id=user_id)
-    except JWTError:
+    except JWTError as e:
+        logging.error(f"JWT decode error: {e}")
         raise credentials_exception
     
     user = await UserModel.find_by_id(user_id)
     if user is None:
+        logging.error(f"User not found for id: {user_id}")
         raise credentials_exception
     return user

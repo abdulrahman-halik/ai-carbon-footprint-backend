@@ -22,3 +22,14 @@ class UserModel:
         if not ObjectId.is_valid(user_id):
             return None
         return cls.get_collection().find_one({"_id": ObjectId(user_id)})
+
+    @classmethod
+    async def update(cls, user_id: str, update_data: dict):
+        if not ObjectId.is_valid(user_id):
+            return None
+        result = cls.get_collection().update_one(
+            {"_id": ObjectId(user_id)}, {"$set": update_data}
+        )
+        if result.modified_count > 0:
+            return cls.get_collection().find_one({"_id": ObjectId(user_id)})
+        return await cls.find_by_id(user_id)

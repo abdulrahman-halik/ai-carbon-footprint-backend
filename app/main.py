@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from app.api.routes import auth, users
+from app.api.routes import auth, users, onboarding, goals
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
 
 @asynccontextmanager
@@ -18,6 +18,8 @@ app = FastAPI(
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
+app.include_router(onboarding.router, prefix="/api/onboarding", tags=["onboarding"])
+app.include_router(goals.router, prefix="/api/goals", tags=["goals"])
 
 @app.get("/")
 async def root():
