@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from app.api.routes import auth, users, onboarding, goals, emissions, energy, water, dashboard
+from app.api.routes import auth, users, onboarding, goals, emissions, energy, water, dashboard, ml, insights
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
 
 @asynccontextmanager
@@ -24,6 +24,8 @@ app.include_router(emissions.router, prefix="/api/emissions", tags=["emissions"]
 app.include_router(energy.router, prefix="/api/energy", tags=["energy"])
 app.include_router(water.router, prefix="/api/water", tags=["water"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
+app.include_router(ml.router, prefix="/api/ml", tags=["ml"])
+app.include_router(insights.router, prefix="/api/insights", tags=["insights"])
 
 @app.get("/")
 async def root():
