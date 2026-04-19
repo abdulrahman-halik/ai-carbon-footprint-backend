@@ -1,0 +1,5 @@
+# Development / testing dependencies — not installed in the Docker image
+-r requirements.txt
+pytest>=8
+pytest-anyio
+mongomock>=4

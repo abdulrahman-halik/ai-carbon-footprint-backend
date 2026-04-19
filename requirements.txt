@@ -1,9 +1,12 @@
 fastapi
-uvicorn
+uvicorn[standard]
 pymongo
-python-jose
-passlib
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt
 pydantic-settings
 python-dotenv
+python-multipart
 requests
 dnspython
+httpx

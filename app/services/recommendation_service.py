@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 from app.vectorstore.embeddings import embed_texts
+from app.services.content_safety_service import contains_sensitive_instruction, sanitize_public_text
 from app.vectorstore.store import InMemoryVectorStore
 
 # Single global store for now. In production you would swap this for FAISS/Chroma.
@@ -12,10 +13,29 @@ def index_documents(docs: List[Dict[str, Any]]) -> Dict[str, Any]:
     Each document should be a dict with at least a `text` key and optional `meta`.
     This endpoint is guarded behind authentication at the API layer to avoid abuse.
     """
-    texts = [d.get('text', '') for d in docs]
+    approved_docs = []
+    for doc in docs:
+        raw_text = str(doc.get("text", "") or "")
+        if contains_sensitive_instruction(raw_text):
+            continue
+
+        sanitized = sanitize_public_text(raw_text, max_length=2000)
+        safe_text = sanitized["text"]
+        if not safe_text:
+            continue
+
+        approved_docs.append({
+            "text": safe_text,
+            "meta": doc.get("meta", {}),
+        })
+
+    if not approved_docs:
+        return {"indexed": 0, "rejected": len(docs)}
+
+    texts = [d.get('text', '') for d in approved_docs]
     vectors = embed_texts(texts)
-    _STORE.add(docs, vectors)
-    return {"indexed": len(docs)}
+    _STORE.add(approved_docs, vectors)
+    return {"indexed": len(approved_docs), "rejected": len(docs) - len(approved_docs)}
 
 
 def search_insights(query: str, top_k: int = 3) -> Dict[str, Any]:
@@ -34,7 +54,8 @@ def search_insights(query: str, top_k: int = 3) -> Dict[str, Any]:
     snippets = []
     for h in hits:
         doc = h.get('doc', {})
-        text = doc.get('text', '')
+        sanitized = sanitize_public_text(doc.get('text', ''), max_length=2000)
+        text = sanitized['text']
         meta = doc.get('meta', {})
         results.append({"text": text, "meta": meta, "score": h.get('score', 0.0)})
         if text:

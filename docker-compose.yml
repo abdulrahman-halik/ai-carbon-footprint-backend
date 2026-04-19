@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+
+  # ── FastAPI application ──────────────────────────────────────────────────────
+  api:
+    build: .
+    container_name: sustainability_api
+    ports:
+      - "8000:8000"
+    environment:
+      # Override these via a .env file or shell environment — never hardcode secrets
+      - MONGODB_URL=mongodb://mongo:27017
+      - DATABASE_NAME=sustainability_db
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - REFRESH_SECRET_KEY=${REFRESH_SECRET_KEY:-change-refresh-key-in-production}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+    # Drop all Linux capabilities; grant only what the process needs (principle of least privilege)
+    cap_drop:
+      - ALL
+
+  # ── MongoDB ──────────────────────────────────────────────────────────────────
+  mongo:
+    image: mongo:7
+    container_name: sustainability_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
