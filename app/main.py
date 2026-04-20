@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import auth, users, onboarding, goals, emissions, energy, water, dashboard, ml, insights, assistant
+from app.api.routes import auth, users, onboarding, goals, emissions, energy, water, dashboard, ml, insights, community, reports
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
 
 @asynccontextmanager
@@ -35,7 +35,8 @@ app.include_router(water.router, prefix="/api/water", tags=["water"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
 app.include_router(ml.router, prefix="/api/ml", tags=["ml"])
 app.include_router(insights.router, prefix="/api/insights", tags=["insights"])
-app.include_router(assistant.router, prefix="/api/assistant", tags=["assistant"])
+app.include_router(community.router, prefix="/api/community", tags=["community"])
+app.include_router(reports.router, prefix="/api/reports", tags=["reports"])
 
 @app.get("/")
 async def root():
