@@ -1,1 +1,1 @@
-from app.api.routes import auth, users, onboarding, goals, emissions, energy, water, dashboard, ml, insights
+from app.api.routes import auth, users, onboarding, goals, emissions, energy, water, dashboard, ml, insights, assistant
