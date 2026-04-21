@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Request, Form, status
 from app.schemas.user_schema import (
     UserCreate, UserOut, Token, UserLogin, PasswordChange, TwoFAToggle
 )
@@ -15,8 +16,20 @@ async def register(user_in: UserCreate):
     return await register_user(user_in)
 
 @router.post("/login", response_model=Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = await authenticate_user(UserLogin(email=form_data.username, password=form_data.password))
+async def login(
+    request: Request,
+    username: Optional[str] = Form(None),
+    password: Optional[str] = Form(None),
+):
+    if username and password:
+        user_login = UserLogin(email=username, password=password)
+    else:
+        body = await request.json()
+        if "username" in body and "email" not in body:
+            body["email"] = body["username"]
+        user_login = UserLogin(**body)
+
+    user = await authenticate_user(user_login)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
