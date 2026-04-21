@@ -26,6 +26,17 @@ class OnboardingStart(BaseModel):
 class OnboardingComplete(BaseModel):
     profile: dict
 
+class ProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    profile: Optional[dict] = None
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
+class TwoFAToggle(BaseModel):
+    enabled: bool
+
 class UserCreate(UserBase):
     email: EmailStr
     password: str
