@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Sustainability Tracking Platform"
@@ -6,11 +6,10 @@ class Settings(BaseSettings):
     DATABASE_NAME: str = "sustainability_db"
     
     # Security
-    SECRET_KEY: str = "YOUR_SUPER_SECRET_KEY_CHANGE_ME"  # Should be loaded from env
+    SECRET_KEY: str = "YOUR_SUPER_SECRET_KEY_CHANGE_ME"  
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env")
 
 settings = Settings()

@@ -19,15 +19,25 @@ async def register(user_in: UserCreate):
 async def login(
     request: Request,
     username: Optional[str] = Form(None),
+    email: Optional[str] = Form(None),
     password: Optional[str] = Form(None),
 ):
-    if username and password:
-        user_login = UserLogin(email=username, password=password)
+    # Support both username and email 
+    login_email = email or username
+    
+    if login_email and password:
+        user_login = UserLogin(email=login_email, password=password)
     else:
-        body = await request.json()
-        if "username" in body and "email" not in body:
-            body["email"] = body["username"]
-        user_login = UserLogin(**body)
+        try:
+            body = await request.json()
+            if "username" in body and "email" not in body:
+                body["email"] = body["username"]
+            user_login = UserLogin(**body)
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Missing or invalid credentials. Provide 'email' and 'password' as Form or JSON data."
+            )
 
     user = await authenticate_user(user_login)
     if not user:
@@ -39,8 +49,8 @@ async def login(
     return await create_user_token(str(user["_id"]))
 
 @router.post("/forgot-password")
-async def forgot_password():
-    return {"message": "Password reset functionality is not implemented yet. Please contact support."}
+async def forgot_password(email: str = Form(...)):
+    return {"message": f"Password reset instructions will be sent to {email} once implemented."}
 
 @router.put("/change-password")
 async def change_password(
