@@ -7,3 +7,7 @@ pydantic-settings
 python-dotenv
 requests
 dnspython
+scikit-learn
+pandas
+joblib
+xgboost

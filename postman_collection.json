@@ -1,811 +1,1229 @@
 {
-    "info": {
-        "_postman_id": "sustainability-api-collection",
-        "name": "Sustainability Tracking Platform",
-        "description": "Complete API collection for the Sustainability Tracking Platform backend.",
-        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-    },
-    "item": [
-        {
-            "name": "Auth",
-            "item": [
-                {
-                    "name": "Register",
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"strongpassword123\",\n    \"full_name\": \"John Doe\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/auth/register",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "auth",
-                                "register"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Login",
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "urlencoded",
-                            "urlencoded": [
-                                {
-                                    "key": "username",
-                                    "value": "user@example.com",
-                                    "type": "text"
-                                },
-                                {
-                                    "key": "password",
-                                    "value": "strongpassword123",
-                                    "type": "text"
-                                }
-                            ]
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/auth/login",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "auth",
-                                "login"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Forgot Password",
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/auth/forgot-password",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "auth",
-                                "forgot-password"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        },
-        {
-            "name": "Users",
-            "item": [
-                {
-                    "name": "Get Me",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/users/me",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "users",
-                                "me"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        },
-        {
-            "name": "Onboarding",
-            "item": [
-                {
-                    "name": "Start Onboarding",
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/onboarding/start",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "onboarding",
-                                "start"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Complete Onboarding",
-                    "request": {
-                        "method": "PUT",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"profile\": {\n        \"diet\": \"vegetarian\",\n        \"transport\": \"public\",\n        \"home_energy\": \"electric\"\n    }\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/onboarding/complete",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "onboarding",
-                                "complete"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        },
-        {
-            "name": "Goals",
-            "item": [
-                {
-                    "name": "Set Goal",
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"target_value\": 500.0,\n    \"category\": \"Overall\",\n    \"target_date\": \"2026-12-31T23:59:59\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/goals/set",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "goals",
-                                "set"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Get Progress",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/goals/progress",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "goals",
-                                "progress"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        },
-        {
-            "name": "Emissions",
-            "item": [
-                {
-                    "name": "Log Emission",
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"category\": \"Transport\",\n    \"value\": 12.5,\n    \"date\": \"2026-04-20\",\n    \"comment\": \"Commute to work\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/emissions/",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "emissions",
-                                ""
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "List Emissions",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/emissions/",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "emissions",
-                                ""
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Update Emission",
-                    "request": {
-                        "method": "PUT",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"value\": 15.0\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/emissions/{{record_id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "emissions",
-                                "{{record_id}}"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Delete Emission",
-                    "request": {
-                        "method": "DELETE",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/emissions/{{record_id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "emissions",
-                                "{{record_id}}"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Emission Stats",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/emissions/stats",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "emissions",
-                                "stats"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        },
-        {
-            "name": "Energy",
-            "item": [
-                {
-                    "name": "Log Energy",
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"type\": \"Electricity\",\n    \"consumption\": 150.0,\n    \"date\": \"2026-04-20\",\n    \"unit\": \"kWh\",\n    \"notes\": \"Monthly bill\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/energy/",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "energy",
-                                ""
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "List Energy Logs",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/energy/",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "energy",
-                                ""
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Update Energy Log",
-                    "request": {
-                        "method": "PUT",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"consumption\": 160.0\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/energy/{{record_id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "energy",
-                                "{{record_id}}"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Delete Energy Log",
-                    "request": {
-                        "method": "DELETE",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/energy/{{record_id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "energy",
-                                "{{record_id}}"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        },
-        {
-            "name": "Water",
-            "item": [
-                {
-                    "name": "Log Water Usage",
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"liters\": 45.0,\n    \"date\": \"2026-04-20\",\n    \"notes\": \"Shower\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/water/",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "water",
-                                ""
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "List Water Logs",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/water/",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "water",
-                                ""
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Update Water Log",
-                    "request": {
-                        "method": "PUT",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"liters\": 50.0\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/water/{{record_id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "water",
-                                "{{record_id}}"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Delete Water Log",
-                    "request": {
-                        "method": "DELETE",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/water/{{record_id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "water",
-                                "{{record_id}}"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        },
-        {
-            "name": "Dashboard",
-            "item": [
-                {
-                    "name": "Summary",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/dashboard/summary",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "dashboard",
-                                "summary"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        },
-        {
-            "name": "ML",
-            "item": [
-                {
-                    "name": "Predict",
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"features\": [1.0, 2.0, 3.0]\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/ml/predict",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "ml",
-                                "predict"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Train",
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"data\": [[1.0, 2.0], [3.0, 4.0]],\n    \"feature_names\": [\"f1\", \"f2\"],\n    \"target_key\": \"target\",\n    \"epochs\": 10,\n    \"lr\": 0.01\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/ml/train",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "ml",
-                                "train"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        },
-        {
-            "name": "Insights",
-            "item": [
-                {
-                    "name": "Search",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/insights/search?q=carbon reduction&top_k=3",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "insights",
-                                "search"
-                            ],
-                            "query": [
-                                {
-                                    "key": "q",
-                                    "value": "carbon reduction"
-                                },
-                                {
-                                    "key": "top_k",
-                                    "value": "3"
-                                }
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Index",
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "[\n    {\n        \"text\": \"Tip: Use solar panels to reduce electricity bills.\",\n        \"meta\": {\"category\": \"Energy\"}\n    }\n]",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/insights/index",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "insights",
-                                "index"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        },
-        {
-            "name": "Community",
-            "item": [
-                {
-                    "name": "Post",
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"content\": \"I just completed my monthly target!\",\n    \"post_type\": \"milestone\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/community/post",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "community",
-                                "post"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Feed",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/community/feed",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "community",
-                                "feed"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        },
-        {
-            "name": "Reports",
-            "item": [
-                {
-                    "name": "Download Report",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/reports/download/monthly",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "reports",
-                                "download",
-                                "monthly"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        }
-    ],
-    "auth": {
-        "type": "bearer",
-        "bearer": [
-            {
-                "key": "token",
-                "value": "{{token}}",
-                "type": "string"
-            }
-        ]
-    },
-    "event": [
-        {
-            "listen": "prerequest",
-            "script": {
-                "type": "text/javascript",
-                "exec": [
-                    ""
-                ]
-            }
-        },
-        {
-            "listen": "test",
-            "script": {
-                "type": "text/javascript",
-                "exec": [
-                    ""
-                ]
-            }
-        }
-    ],
-    "variable": [
-        {
-            "key": "baseUrl",
-            "value": "http://localhost:8000",
-            "type": "string"
-        },
-        {
-            "key": "token",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "record_id",
-            "value": "",
-            "type": "string"
-        }
-    ]
+	"info": {
+		"_postman_id": "8bf8e7d3-49f7-4fc0-97e6-e49a95e84a2a",
+		"name": "Sustainability Tracking Platform API",
+		"description": "Comprehensive API collection for the Sustainability Tracking Platform, including Auth, Emissions, Energy, Water, and more.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"string\",\n    \"full_name\": \"John Doe\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.access_token) {",
+									"    pm.collectionVariables.set(\"access_token\", jsonData.access_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "user@example.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "string",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/forgot-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"forgot-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"current_password\": \"string\",\n    \"new_password\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/change-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"change-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Toggle 2FA",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"enabled\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/2fa",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"2fa"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get Me",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"full_name\": \"John Updated\",\n    \"profile\": {\n        \"location\": \"New York\",\n        \"bio\": \"Sustainability enthusiast\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Account",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Emissions",
+			"item": [
+				{
+					"name": "Log Emission",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"category\": \"Transport\",\n    \"sub_category\": \"Car\",\n    \"value\": 15.5,\n    \"unit\": \"kg CO2e\",\n    \"description\": \"Commute to work\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/emissions/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"emissions",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Emissions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/emissions/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"emissions",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Emission Stats",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/emissions/stats",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"emissions",
+								"stats"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Emission Record",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": 12.0,\n    \"description\": \"Updated commute info\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/emissions/:record_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"emissions",
+								":record_id"
+							],
+							"variable": [
+								{
+									"key": "record_id",
+									"value": "string"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Emission Record",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/emissions/:record_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"emissions",
+								":record_id"
+							],
+							"variable": [
+								{
+									"key": "record_id",
+									"value": "string"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Energy",
+			"item": [
+				{
+					"name": "Log Energy",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"energy_type\": \"Electricity\",\n    \"value\": 150.0,\n    \"unit\": \"kWh\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/energy/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"energy",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Energy Logs",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/energy/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"energy",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Energy Log",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": 145.0\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/energy/:record_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"energy",
+								":record_id"
+							],
+							"variable": [
+								{
+									"key": "record_id",
+									"value": "string"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Energy Log",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/energy/:record_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"energy",
+								":record_id"
+							],
+							"variable": [
+								{
+									"key": "record_id",
+									"value": "string"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Water",
+			"item": [
+				{
+					"name": "Log Water",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": 500.0,\n    \"unit\": \"L\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/water/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"water",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Water Logs",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/water/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"water",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Water Log",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": 480.0\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/water/:record_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"water",
+								":record_id"
+							],
+							"variable": [
+								{
+									"key": "record_id",
+									"value": "string"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Water Log",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/water/:record_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"water",
+								":record_id"
+							],
+							"variable": [
+								{
+									"key": "record_id",
+									"value": "string"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Get Dashboard Summary",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/dashboard/summary",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dashboard",
+								"summary"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Goals",
+			"item": [
+				{
+					"name": "Set Goal",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"target_value\": 100.0,\n    \"target_date\": \"2023-12-31T23:59:59Z\",\n    \"category\": \"Overall\",\n    \"is_active\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/goals/set",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"goals",
+								"set"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Goal Progress",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/goals/progress",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"goals",
+								"progress"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ML",
+			"item": [
+				{
+					"name": "Predict",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"features\": {\n        \"feature1\": 1.0,\n        \"feature2\": 2.5\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ml/predict",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ml",
+								"predict"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Train Model",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"data\": [\n        {\n            \"f1\": 1,\n            \"f2\": 2,\n            \"target\": 10\n        },\n        {\n            \"f1\": 2,\n            \"f2\": 3,\n            \"target\": 20\n        }\n    ],\n    \"feature_names\": [\n        \"f1\",\n        \"f2\"\n    ],\n    \"target_key\": \"target\",\n    \"epochs\": 100,\n    \"lr\": 0.01\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ml/train",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ml",
+								"train"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Insights",
+			"item": [
+				{
+					"name": "Search Insights",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/insights/search?q=how to reduce carbon footprint&top_k=3",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"insights",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "how to reduce carbon footprint"
+								},
+								{
+									"key": "top_k",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Index Documents",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"text\": \"Tip: Use LED bulbs to save energy.\",\n        \"meta\": {\n            \"category\": \"Energy\"\n        }\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/insights/index",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"insights",
+								"index"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Community",
+			"item": [
+				{
+					"name": "Create Post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"I just completed my first week of tracking!\",\n    \"post_type\": \"general\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/community/post",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"community",
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Feed",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/community/feed?limit=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"community",
+								"feed"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Onboarding",
+			"item": [
+				{
+					"name": "Start Onboarding",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/onboarding/start",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"onboarding",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Onboarding",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"profile\": {\n        \"diet\": \"vegetarian\",\n        \"transport\": \"public\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/onboarding/complete",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"onboarding",
+								"complete"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reports",
+			"item": [
+				{
+					"name": "Download Report",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/reports/download/:period",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"reports",
+								"download",
+								":period"
+							],
+							"variable": [
+								{
+									"key": "period",
+									"value": "monthly",
+									"description": "monthly or yearly"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/health",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"health"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		}
+	]
 }
