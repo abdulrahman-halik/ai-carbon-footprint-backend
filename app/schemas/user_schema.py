@@ -45,6 +45,15 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+class PasswordResetConfirm(BaseModel):
+    email: EmailStr
+    token: Optional[str] = None
+    password: str
+    confirm_password: str
+
 class UserUpdate(UserBase):
     password: Optional[str] = None
 

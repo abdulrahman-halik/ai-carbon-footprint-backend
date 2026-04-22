@@ -2,10 +2,12 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Form, status
 from app.schemas.user_schema import (
-    UserCreate, UserOut, Token, UserLogin, PasswordChange, TwoFAToggle
+    UserCreate, UserOut, Token, UserLogin, PasswordChange, TwoFAToggle, 
+    PasswordResetRequest, PasswordResetConfirm
 )
 from app.services.auth_service import (
-    register_user, authenticate_user, create_user_token, change_user_password, toggle_user_2fa
+    register_user, authenticate_user, create_user_token, change_user_password, toggle_user_2fa, 
+    request_password_reset, confirm_password_reset
 )
 from app.api.deps import get_current_user
 
@@ -49,8 +51,12 @@ async def login(
     return await create_user_token(str(user["_id"]))
 
 @router.post("/forgot-password")
-async def forgot_password(email: str = Form(...)):
-    return {"message": f"Password reset instructions will be sent to {email} once implemented."}
+async def forgot_password(forgot_data: PasswordResetRequest):
+    return await request_password_reset(forgot_data)
+
+@router.post("/reset-password")
+async def reset_password(reset_data: PasswordResetConfirm):
+    return await confirm_password_reset(reset_data)
 
 @router.put("/change-password")
 async def change_password(

@@ -10,6 +10,13 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
+    # Email
+    SMTP_SERVER: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = None
+    SMTP_PASSWORD: str = None
+    EMAILS_FROM_NAME: str = "Sustainability Tracker"
+    
     model_config = SettingsConfigDict(env_file=".env")
 
 settings = Settings()
