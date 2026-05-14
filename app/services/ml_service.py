@@ -3,6 +3,10 @@ import os
 from pathlib import Path
 from typing import List, Dict, Any
 
+# Re-export the .pkl-based model functions from the ml package
+from app.ml.model_loader import get_model
+from app.ml.predictor import predict
+
 
 def _model_file_path() -> Path:
     base = Path(__file__).resolve().parents[1]
@@ -77,33 +81,5 @@ def train_model(
     return model
 
 
-def load_model() -> Dict[str, Any]:
-    path = _model_file_path()
-    if not path.exists():
-        raise FileNotFoundError('Model not found. Train a model first.')
-    with path.open('r', encoding='utf-8') as f:
-        return json.load(f)
-
-
-def get_model() -> Dict[str, Any]:
-    try:
-        return load_model()
-    except Exception:
-        return {}
-
-
-def predict(features: Dict[str, float]) -> float:
-    model = get_model()
-    if not model:
-        raise ValueError('No trained model available')
-
-    feature_names = model.get('feature_names', [])
-    weights = model.get('weights', [])
-    bias = float(model.get('bias', 0.0))
-
-    if len(feature_names) != len(weights):
-        raise ValueError('Model is corrupted')
-
-    x = [float(features.get(fn, 0.0)) for fn in feature_names]
-    pred = bias + sum(w * xi for w, xi in zip(weights, x))
-    return float(pred)
+# get_model and predict are now provided by app.ml (see imports above).
+# They use the trained carbon_model.pkl via model_loader + predictor.

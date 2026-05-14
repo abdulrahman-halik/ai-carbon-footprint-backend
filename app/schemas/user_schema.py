@@ -1,52 +1,57 @@
 from typing import Optional, Any
-from pydantic import BaseModel, EmailStr, Field, BeforeValidator
+from pydantic import (
+    BaseModel,
+    EmailStr,
+    Field,
+    BeforeValidator,
+    ConfigDict,
+    field_validator,
+)
 from typing_extensions import Annotated
 
-# Handle MongoDB ObjectId by converting to string
+
+# Convert MongoDB ObjectId -> string
 PyObjectId = Annotated[str, BeforeValidator(str)]
+
 
 class Token(BaseModel):
     access_token: str
     token_type: str
 
+
 class TokenData(BaseModel):
     id: Optional[str] = None
 
+
 class UserBase(BaseModel):
-    email: Optional[EmailStr] = None
-    full_name: Optional[str] = None
     is_active: Optional[bool] = True
     onboarding_completed: Optional[bool] = False
     profile: Optional[dict] = {}
 
-class OnboardingStart(BaseModel):
-    # This might be empty or contain initial setup data
-    pass
-
-class OnboardingComplete(BaseModel):
-    profile: dict
-
-class ProfileUpdate(BaseModel):
-    full_name: Optional[str] = None
-    profile: Optional[dict] = None
-
-class PasswordChange(BaseModel):
-    current_password: str
-    new_password: str
-
-class TwoFAToggle(BaseModel):
-    enabled: bool
 
 class UserCreate(UserBase):
     email: EmailStr
     password: str
+    full_name: str  # Changed to required field without Optional or default
+
+    @field_validator("full_name")
+    @classmethod
+    def full_name_required(cls, v):
+        if not v or not v.strip():
+            raise ValueError("Full name is required for registration")
+        if len(v.strip()) < 3:
+            raise ValueError("Full name must be at least 3 characters long")
+        return v.strip()
+
 
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+
 class PasswordResetRequest(BaseModel):
     email: EmailStr
+
 
 class PasswordResetConfirm(BaseModel):
     email: EmailStr
@@ -54,19 +59,47 @@ class PasswordResetConfirm(BaseModel):
     password: str
     confirm_password: str
 
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
+
+class TwoFAToggle(BaseModel):
+    enabled: bool
+
+
+class ProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    profile: Optional[dict] = None
+
+
+class OnboardingComplete(BaseModel):
+    profile: dict
+
+
+class OnboardingStart(BaseModel):
+    pass
+
+
 class UserUpdate(UserBase):
     password: Optional[str] = None
 
+
 class UserOut(UserBase):
     id: PyObjectId = Field(..., alias="_id")
+    email: EmailStr
+    full_name: str
 
-    class Config:
-        populate_by_name = True
-        json_schema_extra = {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_schema_extra={
             "example": {
                 "_id": "60a2c8e0b6b2c2b3e4f5a6b7",
                 "email": "user@example.com",
                 "full_name": "John Doe",
-                "is_active": True
+                "is_active": True,
             }
-        }
+        },
+    )
