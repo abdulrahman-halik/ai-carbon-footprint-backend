@@ -19,6 +19,10 @@ async def create_emission(
 async def list_emissions(current_user: dict = Depends(get_current_user)):
     return await get_user_emissions(str(current_user["_id"]))
 
+@router.get("/stats")
+async def emission_stats(current_user: dict = Depends(get_current_user)):
+    return await get_emission_stats(str(current_user["_id"]))
+
 @router.put("/{record_id}", response_model=EmissionOut)
 async def update_emission_record(
     record_id: str,
@@ -39,7 +43,3 @@ async def delete_emission_record(
     if not success:
         raise HTTPException(status_code=404, detail="Emission record not found")
     return {"message": "Emission record deleted"}
-
-@router.get("/stats")
-async def emission_stats(current_user: dict = Depends(get_current_user)):
-    return await get_emission_stats(str(current_user["_id"]))

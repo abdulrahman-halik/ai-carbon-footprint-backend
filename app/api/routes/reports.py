@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from app.services import report_service
@@ -27,5 +28,3 @@ async def download_report(
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
-# For filename timestamp
-from datetime import datetime
