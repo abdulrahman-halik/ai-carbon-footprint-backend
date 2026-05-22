@@ -5,7 +5,6 @@ from pydantic import (
     Field,
     BeforeValidator,
     ConfigDict,
-    field_validator,
 )
 from typing_extensions import Annotated
 
@@ -32,16 +31,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     email: EmailStr
     password: str
-    full_name: str  # Changed to required field without Optional or default
-
-    @field_validator("full_name")
-    @classmethod
-    def full_name_required(cls, v):
-        if not v or not v.strip():
-            raise ValueError("Full name is required for registration")
-        if len(v.strip()) < 3:
-            raise ValueError("Full name must be at least 3 characters long")
-        return v.strip()
+    full_name: str
 
 
 class UserLogin(BaseModel):

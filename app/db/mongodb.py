@@ -1,6 +1,6 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 import logging
-from app.core.config.settings import settings
+from app.core.config import settings
 
 client: AsyncIOMotorClient = None
 db = None
