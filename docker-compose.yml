@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: sustainability_mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  backend:
+    build: .
+    container_name: sustainability_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DATABASE_NAME=sustainability_db
+      - SECRET_KEY=default_insecure_secret_key_override_in_env
+      # Ensuring standard JSON array for CORS list
+      - CORS_ORIGINS=["http://localhost:3000","http://localhost:3001","http://127.0.0.1:3000"]
+    depends_on:
+      - mongodb
+    volumes:
+      # Optional: Maps logs folder out from container if needed
+      - ./logs:/app/logs
+
+volumes:
+  mongodb_data:

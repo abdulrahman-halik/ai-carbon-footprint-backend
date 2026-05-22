@@ -11,7 +11,7 @@ from app.schemas.user_schema import (
     UserCreate, UserLogin, Token, PasswordChange,
     PasswordResetRequest, PasswordResetConfirm
 )
-from app.core.config.settings import settings
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 

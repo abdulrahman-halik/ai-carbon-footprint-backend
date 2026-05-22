@@ -8,12 +8,14 @@ from app.api.routes import auth, users, onboarding, goals, emissions, energy, wa
 from app.core.exceptions import validation_exception_handler
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
 import app.db.mongodb as mongo_db
-from app.core.config.settings import settings
+from app.core.config import settings
 from app.core.rate_limit import limiter
+from app.utils.logger import logger
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
+    logger.info("Starting up Sustainability Tracking Platform API...")
     connect_to_mongo()
     import pymongo
     if mongo_db.db is not None:

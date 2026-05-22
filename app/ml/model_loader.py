@@ -12,7 +12,7 @@ from typing import Any
 import joblib
 
 # Absolute path to the trained model file
-_MODEL_PATH = Path(__file__).resolve().parent / "models" / "carbon_model.pkl"
+_MODEL_PATH = Path(__file__).resolve().parent.parent / "artifacts" / "carbon_model.pkl"
 
 # Module-level singleton — model is loaded only once per process
 _cached_model: Any = None
@@ -35,7 +35,7 @@ def get_model() -> Any:
     if not _MODEL_PATH.exists():
         raise FileNotFoundError(
             f"Trained model not found at {_MODEL_PATH}. "
-            "Please place carbon_model.pkl inside app/ml/models/."
+            "Please place carbon_model.pkl inside app/artifacts/."
         )
 
     try:
