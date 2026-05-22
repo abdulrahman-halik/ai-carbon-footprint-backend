@@ -33,4 +33,10 @@ Thumbs.db
 
 plan/
 
+
 postman_collection.json
+
+artifacts/*.pkl
+artifacts/*.h5
+artifacts/*.pt
+

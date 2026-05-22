@@ -1,6 +1,7 @@
 from app.db import mongodb
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timezone
+
 
 class CommunityPostModel:
     collection = "community_posts"
@@ -11,11 +12,11 @@ class CommunityPostModel:
 
     @classmethod
     async def create(cls, post_data: dict):
-        post_data["timestamp"] = datetime.utcnow()
-        result = cls.get_collection().insert_one(post_data)
-        return cls.get_collection().find_one({"_id": result.inserted_id})
+        post_data["timestamp"] = datetime.now(timezone.utc)
+        result = await cls.get_collection().insert_one(post_data)
+        return await cls.get_collection().find_one({"_id": result.inserted_id})
 
     @classmethod
     async def get_all(cls, limit: int = 20):
-        posts = list(cls.get_collection().find().sort("timestamp", -1).limit(limit))
-        return posts
+        cursor = cls.get_collection().find().sort("timestamp", -1).limit(limit)
+        return await cursor.to_list(length=limit)

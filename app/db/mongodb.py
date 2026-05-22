@@ -1,22 +1,23 @@
-from pymongo import MongoClient
-import logging
-
+from motor.motor_asyncio import AsyncIOMotorClient
+from app.utils.logger import logger
 from app.core.config import settings
 
-client = None
+client: AsyncIOMotorClient = None
 db = None
+
 
 def connect_to_mongo():
     global client, db
     try:
-        client = MongoClient(settings.MONGODB_URL)
+        client = AsyncIOMotorClient(settings.MONGODB_URL)
         db = client[settings.DATABASE_NAME]
-        logging.info("Connected to MongoDB!")
+        logger.info("Connected to MongoDB (motor async)!")
     except Exception as e:
-        logging.error(f"Could not connect to MongoDB: {e}")
+        logger.error(f"Could not connect to MongoDB: {e}")
+
 
 def close_mongo_connection():
     global client
     if client:
         client.close()
-        logging.info("Closed MongoDB connection.")
+        logger.info("Closed MongoDB connection.")

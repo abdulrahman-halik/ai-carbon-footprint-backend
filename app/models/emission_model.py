@@ -1,6 +1,7 @@
 from app.db import mongodb
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timezone
+
 
 class EmissionModel:
     collection = "emissions"
@@ -11,29 +12,37 @@ class EmissionModel:
 
     @classmethod
     async def create(cls, data: dict):
-        data["created_at"] = datetime.utcnow()
-        result = cls.get_collection().insert_one(data)
-        return cls.get_collection().find_one({"_id": result.inserted_id})
+        data["created_at"] = datetime.now(timezone.utc)
+        result = await cls.get_collection().insert_one(data)
+        return await cls.get_collection().find_one({"_id": result.inserted_id})
 
     @classmethod
     async def find_by_user_id(cls, user_id: str):
-        return list(cls.get_collection().find({"user_id": user_id}).sort("date", -1))
+        cursor = cls.get_collection().find({"user_id": user_id}).sort("date", -1)
+        return await cursor.to_list(length=None)
 
     @classmethod
-    async def update(cls, record_id: str, update_data: dict):
+    async def update(cls, record_id: str, update_data: dict, user_id: str = None):
         if not ObjectId.is_valid(record_id):
             return None
-        update_data["updated_at"] = datetime.utcnow()
-        cls.get_collection().update_one(
-            {"_id": ObjectId(record_id)}, {"$set": update_data}
-        )
-        return cls.get_collection().find_one({"_id": ObjectId(record_id)})
+        update_data["updated_at"] = datetime.now(timezone.utc)
+        # If user_id is provided, scope the update to that user (ownership check)
+        query = {"_id": ObjectId(record_id)}
+        if user_id:
+            query["user_id"] = user_id
+        result = await cls.get_collection().update_one(query, {"$set": update_data})
+        if result.matched_count == 0:
+            return None
+        return await cls.get_collection().find_one({"_id": ObjectId(record_id)})
 
     @classmethod
-    async def delete(cls, record_id: str):
+    async def delete(cls, record_id: str, user_id: str = None) -> bool:
         if not ObjectId.is_valid(record_id):
             return False
-        result = cls.get_collection().delete_one({"_id": ObjectId(record_id)})
+        query = {"_id": ObjectId(record_id)}
+        if user_id:
+            query["user_id"] = user_id
+        result = await cls.get_collection().delete_one(query)
         return result.deleted_count > 0
 
     @classmethod
@@ -45,4 +54,8 @@ class EmissionModel:
                 "total_value": {"$sum": "$value"}
             }}
         ]
-        return list(cls.get_collection().aggregate(pipeline))
+        return await cls.get_collection().aggregate(pipeline).to_list(length=None)
+
+    @classmethod
+    async def delete_by_user_id(cls, user_id: str):
+        await cls.get_collection().delete_many({"user_id": user_id})

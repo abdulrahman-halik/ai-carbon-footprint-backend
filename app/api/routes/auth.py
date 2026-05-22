@@ -6,18 +6,21 @@ from app.schemas.user_schema import (
     PasswordResetRequest, PasswordResetConfirm
 )
 from app.services.auth_service import (
-    register_user, authenticate_user, create_user_token, change_user_password, toggle_user_2fa, 
+    register_user, authenticate_user, create_user_token, change_user_password,
     request_password_reset, confirm_password_reset
 )
 from app.api.deps import get_current_user
+from app.core.rate_limit import limiter
 
 router = APIRouter()
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
-async def register(user_in: UserCreate):
+@limiter.limit("5/minute")
+async def register(request: Request, user_in: UserCreate):
     return await register_user(user_in)
 
 @router.post("/login", response_model=Token)
+@limiter.limit("5/minute")
 async def login(
     request: Request,
     username: Optional[str] = Form(None),
@@ -51,11 +54,13 @@ async def login(
     return await create_user_token(str(user["_id"]))
 
 @router.post("/forgot-password")
-async def forgot_password(forgot_data: PasswordResetRequest):
+@limiter.limit("3/minute")
+async def forgot_password(request: Request, forgot_data: PasswordResetRequest):
     return await request_password_reset(forgot_data)
 
 @router.post("/reset-password")
-async def reset_password(reset_data: PasswordResetConfirm):
+@limiter.limit("3/minute")
+async def reset_password(request: Request, reset_data: PasswordResetConfirm):
     return await confirm_password_reset(reset_data)
 
 @router.put("/change-password")
@@ -66,10 +71,4 @@ async def change_password(
     await change_user_password(str(current_user["_id"]), password_data)
     return {"message": "Password changed successfully"}
 
-@router.put("/2fa")
-async def toggle_2fa(
-    two_fa_data: TwoFAToggle,
-    current_user: dict = Depends(get_current_user)
-):
-    await toggle_user_2fa(str(current_user["_id"]), two_fa_data)
-    return {"message": f"2FA {'enabled' if two_fa_data.enabled else 'disabled'} successfully"}
+

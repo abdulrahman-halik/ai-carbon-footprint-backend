@@ -1,60 +1,51 @@
-import os
-import joblib
+"""
+model_loader.py — Load the trained .pkl brain once and cache it in memory.
+
+Uses joblib (the standard serialiser for scikit-learn models) instead of
+plain pickle to handle cross-version compatibility warnings gracefully.
+"""
+
+import warnings
 from pathlib import Path
-from app.utils.logger import logger
+from typing import Any
 
-# Base directory for models
-MODEL_DIR = Path(__file__).parent / "models"
-CARBON_MODEL_PATH = MODEL_DIR / "carbon_model.pkl"
-SCALER_PATH = MODEL_DIR / "scaler.pkl"
+import joblib
 
-# Cached models
-_models = {
-    "carbon_model": None,
-    "scaler": None
-}
+# Absolute path to the trained model file
+_MODEL_PATH = Path(__file__).resolve().parent.parent / "artifacts" / "carbon_model.pkl"
 
-def load_models():
+# Module-level singleton — model is loaded only once per process
+_cached_model: Any = None
+
+
+def get_model() -> Any:
+    """Return the loaded sklearn model, loading from disk on first call.
+
+    Returns:
+        A fitted sklearn estimator (RandomForestRegressor).
+
+    Raises:
+        FileNotFoundError: If the .pkl file does not exist on disk.
+        RuntimeError: If the model file cannot be deserialized.
     """
-    Loads the machine learning models and scalers into memory if not already loaded.
-    """
-    global _models
-    
+    global _cached_model
+    if _cached_model is not None:
+        return _cached_model
+
+    if not _MODEL_PATH.exists():
+        raise FileNotFoundError(
+            f"Trained model not found at {_MODEL_PATH}. "
+            "Please place carbon_model.pkl inside app/artifacts/."
+        )
+
     try:
-        if _models["carbon_model"] is None:
-            if not CARBON_MODEL_PATH.exists():
-                logger.error(f"Carbon model file not found at {CARBON_MODEL_PATH}")
-                # We won't raise here if we want the app to start even without models, 
-                # but for ML module it's critical.
-                raise FileNotFoundError(f"Carbon model file not found at {CARBON_MODEL_PATH}")
-            
-            logger.info(f"Loading carbon model from {CARBON_MODEL_PATH}...")
-            _models["carbon_model"] = joblib.load(CARBON_MODEL_PATH)
-            logger.info("Carbon model loaded successfully.")
+        with warnings.catch_warnings():
+            # Suppress sklearn InconsistentVersionWarning on minor version diffs
+            warnings.simplefilter("ignore")
+            _cached_model = joblib.load(_MODEL_PATH)
+    except Exception as exc:
+        raise RuntimeError(
+            f"Failed to load model from {_MODEL_PATH}: {exc}"
+        ) from exc
 
-        if _models["scaler"] is None:
-            if not SCALER_PATH.exists():
-                logger.error(f"Scaler file not found at {SCALER_PATH}")
-                raise FileNotFoundError(f"Scaler file not found at {SCALER_PATH}")
-            
-            logger.info(f"Loading scaler from {SCALER_PATH}...")
-            _models["scaler"] = joblib.load(SCALER_PATH)
-            logger.info("Scaler loaded successfully.")
-            
-    except Exception as e:
-        logger.error(f"Error loading models: {str(e)}")
-        raise e
-
-def get_model(name: str):
-    """
-    Returns a loaded model by name.
-    """
-    if _models.get(name) is None:
-        load_models()
-    return _models.get(name)
-
-def get_carbon_model():
-    return get_model("carbon_model")
-
-def get_scaler():
-    return get_model("scaler")
+    return _cached_model
