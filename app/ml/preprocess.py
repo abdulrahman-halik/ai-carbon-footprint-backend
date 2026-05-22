@@ -11,6 +11,12 @@ import numpy as np
 
 # Canonical feature order — must exactly match what the model was trained on.
 # Obtained from model.feature_names_in_ after loading carbon_model.pkl.
+#
+# FIX #20 WARNING: This feature array dangerously mixes two entirely different schemas 
+# (Schema 1: 'User_ID', 'Transport_Mode' vs Schema 2: 'Sex', 'Diet', survey questions).
+# The current prepare_input logic simply defaults missing fields to 0.0, which produces
+# silently incorrect predictions if the wrong schema is used.
+# In a future iteration, this must be split or strict schema validation must be added.
 FEATURE_ORDER: List[str] = [
     "User_ID",
     "Age",

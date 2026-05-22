@@ -2,14 +2,27 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler  # type: ignore
+from slowapi.errors import RateLimitExceeded  # type: ignore
 from app.api.routes import auth, users, onboarding, goals, emissions, energy, water, dashboard, ml, insights, community, reports
 from app.core.exceptions import validation_exception_handler
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
+import app.db.mongodb as mongo_db
+from app.core.config.settings import settings
+from app.core.rate_limit import limiter
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
     connect_to_mongo()
+    import pymongo
+    if mongo_db.db is not None:
+        # Fix #17: Create critical indexes on startup
+        await mongo_db.db["users"].create_index([("email", pymongo.ASCENDING)], unique=True)
+        await mongo_db.db["emissions"].create_index([("user_id", pymongo.ASCENDING)])
+        await mongo_db.db["energy_logs"].create_index([("user_id", pymongo.ASCENDING)])
+        await mongo_db.db["water_logs"].create_index([("user_id", pymongo.ASCENDING)])
+        await mongo_db.db["goals"].create_index([("user_id", pymongo.ASCENDING)])
     yield
     # Shutdown
     close_mongo_connection()
@@ -19,20 +32,16 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS configuration
-origins = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3000",
-]
-
+# CORS configuration is now dynamically loaded from settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
