@@ -1,6 +1,6 @@
 from typing import Optional
-from pydantic import BaseModel, Field
-from datetime import datetime
+from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime, timezone
 from .user_schema import PyObjectId
 
 class EnergyBase(BaseModel):
@@ -24,5 +24,6 @@ class EnergyOut(EnergyBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )

@@ -1,74 +1,146 @@
-from typing import Optional
+from typing import Any, Dict
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Form, status
+from app.api.deps import get_current_user
 from app.schemas.user_schema import (
-    UserCreate, UserOut, Token, UserLogin, PasswordChange, TwoFAToggle, 
-    PasswordResetRequest, PasswordResetConfirm
+    PasswordChange,
+    PasswordResetConfirm,
+    PasswordResetRequest,
+    Token,
+    UserCreate,
+    UserOut,
+    UserLogin,
 )
 from app.services.auth_service import (
-    register_user, authenticate_user, create_user_token, change_user_password,
-    request_password_reset, confirm_password_reset
+    authenticate_user,
+    change_user_password,
+    confirm_password_reset,
+    create_user_token,
+    register_user,
+    request_password_reset,
+    InvalidPasswordError,
+    UserAlreadyExistsError,
+    UserNotFoundError,
+    InvalidTokenError,
+    PasswordMismatchError,
 )
-from app.api.deps import get_current_user
-from app.core.rate_limit import limiter
 
 router = APIRouter()
 
-@router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
-@limiter.limit("5/minute")
-async def register(request: Request, user_in: UserCreate):
-    return await register_user(user_in)
 
-@router.post("/login", response_model=Token)
-@limiter.limit("5/minute")
-async def login(
-    request: Request,
-    username: Optional[str] = Form(None),
-    email: Optional[str] = Form(None),
-    password: Optional[str] = Form(None),
-):
-    # Support both username and email 
-    login_email = email or username
+# AUTHENTICATION & REGISTRATION
+
+@router.post(
+    "/register",
+    response_model=UserOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Register a new user"
+)
+async def register(user_in: UserCreate) -> Any:
+    """Creates a new user account with the provided details."""
+    try:
+        return await register_user(user_in)
+    except UserAlreadyExistsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post(
+    "/login", 
+    response_model=Token,
+    summary="User login for access token"
+)
+async def login(request: Request) -> Any:
+    """
+    Logs in a user. Accepts either 'email' or 'username' alongside 'password'.
+    Expects a strict JSON body payload.
+    """
+    try:
+        body: Dict[str, Any] = await request.json()
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid JSON payload provided."
+        )
+
+    # Normalize 'username' to 'email' field if provided instead
+    if "username" in body and "email" not in body:
+        body["email"] = body["username"]
+
+    if not body.get("email") or not body.get("password"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Credentials missing. Both email (or username) and password are required."
+        )
+
+    # Use the Pydantic schema to parse and validate the dict payload structured above
+    try:
+        user_login = UserLogin(**body)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e)
+        )
     
-    if login_email and password:
-        user_login = UserLogin(email=login_email, password=password)
-    else:
-        try:
-            body = await request.json()
-            if "username" in body and "email" not in body:
-                body["email"] = body["username"]
-            user_login = UserLogin(**body)
-        except Exception:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Missing or invalid credentials. Provide 'email' and 'password' as Form or JSON data."
-            )
-
     user = await authenticate_user(user_login)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="Incorrect email/username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
     return await create_user_token(str(user["_id"]))
 
-@router.post("/forgot-password")
-@limiter.limit("3/minute")
-async def forgot_password(request: Request, forgot_data: PasswordResetRequest):
-    return await request_password_reset(forgot_data)
 
-@router.post("/reset-password")
-@limiter.limit("3/minute")
-async def reset_password(request: Request, reset_data: PasswordResetConfirm):
-    return await confirm_password_reset(reset_data)
+# PASSWORD MANAGEMENT
 
-@router.put("/change-password")
+@router.post("/forgot-password", summary="Request password reset token")
+async def forgot_password(forgot_data: PasswordResetRequest) -> Any:
+    """Sends a password reset link/token to the user's registered email."""
+    try:
+        return await request_password_reset(forgot_data)
+    except UserNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+
+
+@router.post("/reset-password", summary="Reset password using token")
+async def reset_password(reset_data: PasswordResetConfirm) -> Any:
+    """Resets the user's password using a valid token."""
+    try:
+        return await confirm_password_reset(reset_data)
+    except (InvalidTokenError, PasswordMismatchError) as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post("/change-password", summary="Change current user password")
 async def change_password(
     password_data: PasswordChange,
-    current_user: dict = Depends(get_current_user)
-):
-    await change_user_password(str(current_user["_id"]), password_data)
-    return {"message": "Password changed successfully"}
+    current_user: dict = Depends(get_current_user),
+) -> Any:
+    """Changes the password for the currently authenticated user."""
+    # Front-end constraint rule checked at the API boundary
+    if password_data.current_password == password_data.new_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be different from the current password.",
+        )
 
-
+    try:
+        await change_user_password(str(current_user["_id"]), password_data)
+        return {"success": True, "message": "Password changed successfully."}
+        
+    except InvalidPasswordError as e:
+        # Handles clean translation of service exception to user-facing HTTP 400
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )

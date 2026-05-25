@@ -1,6 +1,6 @@
 from typing import Optional
-from pydantic import BaseModel, Field
-from datetime import datetime
+from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime, timezone
 from .user_schema import PyObjectId
 
 class GoalBase(BaseModel):
@@ -8,6 +8,7 @@ class GoalBase(BaseModel):
     target_date: Optional[datetime] = None
     is_active: bool = True
     category: str  # e.g., "Food", "Shopping", "Overall"
+    
 
 class GoalCreate(GoalBase):
     pass
@@ -20,11 +21,14 @@ class GoalUpdate(BaseModel):
 class GoalOut(GoalBase):
     id: PyObjectId = Field(..., alias="_id")
     user_id: str
+    current_value: float = 0.0
+    status: str = "active"
     created_at: datetime
     updated_at: Optional[datetime] = None
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
 
 class GoalProgress(BaseModel):
     goal: GoalOut

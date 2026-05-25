@@ -33,6 +33,10 @@ async def get_user_emissions(user_id: str):
     return await EmissionModel.find_by_user_id(user_id)
 
 
+async def get_emission_by_id(record_id: str, user_id: str):
+    return await EmissionModel.find_by_id(record_id, user_id=user_id)
+
+
 # Fix #8: accept user_id so the model layer can enforce ownership
 async def update_emission(record_id: str, update_data: EmissionUpdate, user_id: str = None):
     return await EmissionModel.update(record_id, update_data.model_dump(exclude_unset=True), user_id=user_id)

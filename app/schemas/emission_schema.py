@@ -1,6 +1,6 @@
 from typing import Optional
-from pydantic import BaseModel, Field
-from datetime import datetime
+from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime, timezone
 from .user_schema import PyObjectId
 
 class EmissionBase(BaseModel):
@@ -8,7 +8,7 @@ class EmissionBase(BaseModel):
     sub_category: Optional[str] = None
     value: float  # The carbon footprint value in kg CO2e
     unit: str = "kg CO2e"
-    date: datetime = Field(default_factory=datetime.utcnow)
+    date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     description: Optional[str] = None
 
 class EmissionCreate(EmissionBase):
@@ -28,5 +28,6 @@ class EmissionOut(EmissionBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )

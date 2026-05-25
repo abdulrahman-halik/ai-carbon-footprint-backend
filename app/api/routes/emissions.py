@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.api.deps import get_current_user
 from app.schemas.emission_schema import EmissionCreate, EmissionOut, EmissionUpdate
 from app.services.emission_service import (
-    log_emission, get_user_emissions, update_emission, delete_emission, get_emission_stats
+    log_emission, get_user_emissions, get_emission_by_id, update_emission, delete_emission, get_emission_stats
 )
 
 router = APIRouter()
@@ -25,6 +25,17 @@ async def list_emissions(current_user: dict = Depends(get_current_user)):
 @router.get("/stats")
 async def emission_stats(current_user: dict = Depends(get_current_user)):
     return await get_emission_stats(str(current_user["_id"]))
+
+
+@router.get("/{record_id}", response_model=EmissionOut)
+async def get_emission(
+    record_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    emission = await get_emission_by_id(record_id, str(current_user["_id"]))
+    if not emission:
+        raise HTTPException(status_code=404, detail="Emission record not found or access denied")
+    return emission
 
 
 @router.put("/{record_id}", response_model=EmissionOut)

@@ -6,7 +6,6 @@ async def test_register_user(client):
         "/api/auth/register",
         json={
             "email": "newuser@example.com",
-            "username": "newuser",
             "full_name": "New User",
             "password": "Password123!"
         }
@@ -17,9 +16,23 @@ async def test_register_user(client):
 
 @pytest.mark.asyncio
 async def test_login_user(client, test_user):
+    # Test JSON login with 'email'
     response = await client.post(
         "/api/auth/login",
-        data={
+        json={
+            "email": "test@example.com",
+            "password": "password123"
+        }
+    )
+    assert response.status_code == 200
+    assert "access_token" in response.json()
+
+@pytest.mark.asyncio
+async def test_login_user_with_username_alias(client, test_user):
+    # Test JSON login with 'username' alias
+    response = await client.post(
+        "/api/auth/login",
+        json={
             "username": "test@example.com",
             "password": "password123"
         }
@@ -31,8 +44,8 @@ async def test_login_user(client, test_user):
 async def test_invalid_login(client):
     response = await client.post(
         "/api/auth/login",
-        data={
-            "username": "nonexistent@example.com",
+        json={
+            "email": "nonexistent@example.com",
             "password": "wrongpassword"
         }
     )
@@ -40,7 +53,7 @@ async def test_invalid_login(client):
 
 @pytest.mark.asyncio
 async def test_change_password(client, auth_headers):
-    response = await client.put(
+    response = await client.post(
         "/api/auth/change-password",
         json={
             "current_password": "password123",
@@ -49,4 +62,18 @@ async def test_change_password(client, auth_headers):
         headers=auth_headers
     )
     assert response.status_code == 200
-    assert response.json()["message"] == "Password changed successfully"
+    assert response.json()["message"] == "Password changed successfully."
+
+@pytest.mark.asyncio
+async def test_change_password_same_password(client, auth_headers):
+    # Should fail if new password is same as current
+    response = await client.post(
+        "/api/auth/change-password",
+        json={
+            "current_password": "password123",
+            "new_password": "password123"
+        },
+        headers=auth_headers
+    )
+    assert response.status_code == 400
+    assert "New password must be different" in response.json()["detail"]

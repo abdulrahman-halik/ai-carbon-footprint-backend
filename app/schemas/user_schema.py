@@ -29,9 +29,9 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
+    full_name: str
     email: EmailStr
     password: str
-    full_name: str
 
 
 class UserLogin(BaseModel):

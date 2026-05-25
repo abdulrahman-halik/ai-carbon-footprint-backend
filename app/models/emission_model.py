@@ -22,6 +22,15 @@ class EmissionModel:
         return await cursor.to_list(length=None)
 
     @classmethod
+    async def find_by_id(cls, record_id: str, user_id: str = None):
+        if not ObjectId.is_valid(record_id):
+            return None
+        query = {"_id": ObjectId(record_id)}
+        if user_id:
+            query["user_id"] = user_id
+        return await cls.get_collection().find_one(query)
+
+    @classmethod
     async def update(cls, record_id: str, update_data: dict, user_id: str = None):
         if not ObjectId.is_valid(record_id):
             return None
