@@ -22,6 +22,15 @@ class EmissionModel:
         return await cursor.to_list(length=None)
 
     @classmethod
+    async def find_by_id(cls, record_id: str, user_id: str = None):
+        if not ObjectId.is_valid(record_id):
+            return None
+        query = {"_id": ObjectId(record_id)}
+        if user_id:
+            query["user_id"] = str(user_id)
+        return await cls.get_collection().find_one(query)
+
+    @classmethod
     async def update(cls, record_id: str, update_data: dict, user_id: str = None):
         if not ObjectId.is_valid(record_id):
             return None
@@ -29,7 +38,7 @@ class EmissionModel:
         # If user_id is provided, scope the update to that user (ownership check)
         query = {"_id": ObjectId(record_id)}
         if user_id:
-            query["user_id"] = user_id
+            query["user_id"] = str(user_id)
         result = await cls.get_collection().update_one(query, {"$set": update_data})
         if result.matched_count == 0:
             return None
@@ -41,7 +50,7 @@ class EmissionModel:
             return False
         query = {"_id": ObjectId(record_id)}
         if user_id:
-            query["user_id"] = user_id
+            query["user_id"] = str(user_id)
         result = await cls.get_collection().delete_one(query)
         return result.deleted_count > 0
 
