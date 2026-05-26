@@ -33,7 +33,7 @@ Thumbs.db
 
 plan/
 
-collection.json
+postman_collection.json
 openapi.json
 
 artifacts/*.pkl
