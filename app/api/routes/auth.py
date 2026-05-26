@@ -72,7 +72,7 @@ async def login(request: Request) -> Any:
     if not body.get("email") or not body.get("password"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Credentials missing. Both email (or username) and password are required."
+            detail="Credentials missing. Both (email or username) and password are required."
         )
 
     # Use the Pydantic schema to parse and validate the dict payload structured above
