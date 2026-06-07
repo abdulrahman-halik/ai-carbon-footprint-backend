@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import auth, users, onboarding, goals, emissions, energy, water, dashboard, ml, insights, community, reports
+from app.api.routes import auth, users, onboarding, goals, emissions, energy, water, dashboard, ml, insights, community, reports, education
 from app.core.exceptions import validation_exception_handler
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
 import app.db.mongodb as mongo_db
@@ -52,6 +52,7 @@ app.include_router(ml.router, prefix="/api/ml", tags=["ml"])
 app.include_router(insights.router, prefix="/api/insights", tags=["insights"])
 app.include_router(community.router, prefix="/api/community", tags=["community"])
 app.include_router(reports.router, prefix="/api/reports", tags=["reports"])
+app.include_router(education.router, prefix="/api/education", tags=["education"])
 
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
