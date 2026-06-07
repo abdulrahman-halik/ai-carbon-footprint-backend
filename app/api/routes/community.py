@@ -18,3 +18,12 @@ async def create_post(
 @router.get("/feed", response_model=List[PostOut])
 async def get_feed(limit: int = 20):
     return await community_service.get_community_feed(limit=limit)
+
+@router.get("/leaderboard")
+async def get_leaderboard(limit: int = 10, current_user: dict = Depends(get_current_user)):
+    board = await community_service.get_leaderboard(limit=limit)
+    user_id_str = str(current_user["_id"])
+    for user in board:
+        if user["id"] == user_id_str:
+            user["isCurrentUser"] = True
+    return board
