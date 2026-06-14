@@ -7,6 +7,7 @@ class EnergyBase(BaseModel):
     energy_type: str  # e.g., "Electricity", "Natural Gas", "Heating Oil"
     value: float
     unit: str  # e.g., "kWh", "m3", "L"
+    notes: Optional[str] = None
     date: datetime = Field(default_factory=datetime.utcnow)
 
 class EnergyCreate(EnergyBase):
