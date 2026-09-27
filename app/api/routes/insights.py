@@ -6,6 +6,28 @@ from app.services.recommendation_service import search_insights, index_documents
 router = APIRouter()
 
 
+from pydantic import BaseModel
+
+class ChatMessage(BaseModel):
+    role: str
+    parts: str | list[str]
+    
+class ChatPayload(BaseModel):
+    messages: List[ChatMessage]
+
+@router.post("/chat")
+async def insights_chat(payload: ChatPayload):
+    from app.services.ai_service import chat_with_ai
+    try:
+        # Convert Pydantic models to dicts expected by Gemini API
+        messages_dicts = [ {"role": msg.role, "parts": [msg.parts] if isinstance(msg.parts, str) else msg.parts} for msg in payload.messages ]
+        response_text = chat_with_ai(messages_dicts)
+        return {"insight": response_text}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/search")
 async def insights_search(q: str = Query(..., min_length=1), top_k: int = Query(3, ge=1, le=20)):
     try:
