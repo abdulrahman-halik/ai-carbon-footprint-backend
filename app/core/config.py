@@ -16,11 +16,11 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str | None = None
 
     # Email / SMTP Configuration
-    SMTP_SERVER: str = "smtp.gmail.com"
+    SMTP_HOST: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
-    SMTP_USER: str | None = None
+    SMTP_USERNAME: str | None = None
     SMTP_PASSWORD: str | None = None
-    EMAILS_FROM_NAME: str = "Sustainability Tracker"
+    SMTP_FROM_EMAIL: str = "abdhurrahman200011@gmail.com"
 
     # CORS — Fix #16: moved from main.py hardcode to settings
     CORS_ORIGINS: List[str] = [
