@@ -62,7 +62,7 @@ def _send_reset_email(to_email: str, token: str) -> None:
     try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = "Your Password Reset Code"
-        msg["From"] = f"{settings.EMAILS_FROM_NAME} <{settings.SMTP_USER}>"
+        msg["From"] = f"{settings.SMTP_FROM_EMAIL}"
         msg["To"] = to_email
 
         body = (
@@ -71,18 +71,21 @@ def _send_reset_email(to_email: str, token: str) -> None:
         )
         msg.attach(MIMEText(body, "plain"))
 
-        if settings.SMTP_SERVER and settings.SMTP_SERVER.lower() != "mock":
-            with smtplib.SMTP(settings.SMTP_SERVER, settings.SMTP_PORT) as server:
+        if settings.SMTP_HOST and settings.SMTP_HOST.lower() != "mock":
+            logger.info(f"Connecting to SMTP server {settings.SMTP_HOST}:{settings.SMTP_PORT}")
+            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
                 server.ehlo()
                 server.starttls()
-                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-                server.sendmail(settings.SMTP_USER, to_email, msg.as_string())
-                logger.info(f"Reset email sent to {to_email}")
+                logger.info(f"Authenticating with user {settings.SMTP_USERNAME}")
+                server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
+                logger.info(f"Sending email to {to_email}")
+                server.sendmail(settings.SMTP_FROM_EMAIL, to_email, msg.as_string())
+                logger.info(f"Reset email successfully sent to {to_email}")
         else:
             logger.warning(f"[MOCK SMTP] Reset token for {to_email}: {token}")
 
     except Exception as exc:
-        logger.error(f"Failed to send reset email to {to_email}: {exc}")
+        logger.error(f"Failed to send reset email to {to_email}: {exc}", exc_info=True)
 
 
 async def register_user(user_in: UserCreate):
@@ -150,7 +153,7 @@ async def request_password_reset(reset_data: PasswordResetRequest):
 
     _send_reset_email(reset_data.email, reset_token)
 
-    if settings.SMTP_SERVER and settings.SMTP_SERVER.lower() == "mock":
+    if settings.SMTP_HOST and settings.SMTP_HOST.lower() == "mock":
         logger.warning(
             "Mock SMTP active — returning reset token in response for development."
         )
