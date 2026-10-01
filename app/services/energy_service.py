@@ -9,8 +9,8 @@ async def log_energy(user_id: str, energy_in: EnergyCreate):
 async def get_user_energy_logs(user_id: str):
     return await EnergyModel.find_by_user_id(user_id)
 
-async def update_energy_log(record_id: str, update_data: EnergyUpdate):
-    return await EnergyModel.update(record_id, update_data.model_dump(exclude_unset=True))
+async def update_energy_log(record_id: str, update_data: EnergyUpdate, user_id: str = None):
+    return await EnergyModel.update(record_id, update_data.model_dump(exclude_unset=True), user_id=user_id)
 
-async def delete_energy_log(record_id: str):
-    return await EnergyModel.delete(record_id)
+async def delete_energy_log(record_id: str, user_id: str = None):
+    return await EnergyModel.delete(record_id, user_id=user_id)

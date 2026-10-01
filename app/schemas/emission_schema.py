@@ -10,6 +10,7 @@ class EmissionBase(BaseModel):
     unit: str = "kg CO2e"
     date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     description: Optional[str] = None
+    distance: Optional[float] = None
 
 class EmissionCreate(EmissionBase):
     pass

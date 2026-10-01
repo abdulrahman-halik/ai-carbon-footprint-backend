@@ -15,6 +15,11 @@ async def create_emission(
     emission_in: EmissionCreate,
     current_user: dict = Depends(get_current_user)
 ):
+    if emission_in.distance is not None and emission_in.distance < 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Distance must be 0 or greater"
+        )
     return await log_emission(str(current_user["_id"]), emission_in)
 
 

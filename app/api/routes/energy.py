@@ -25,9 +25,9 @@ async def update_energy_record(
     update_data: EnergyUpdate,
     current_user: dict = Depends(get_current_user)
 ):
-    updated = await update_energy_log(record_id, update_data)
+    updated = await update_energy_log(record_id, update_data, user_id=str(current_user["_id"]))
     if not updated:
-        raise HTTPException(status_code=404, detail="Energy log not found")
+        raise HTTPException(status_code=404, detail="Energy log not found or access denied")
     return updated
 
 @router.delete("/{record_id}")
@@ -35,7 +35,7 @@ async def delete_energy_record(
     record_id: str,
     current_user: dict = Depends(get_current_user)
 ):
-    success = await delete_energy_log(record_id)
+    success = await delete_energy_log(record_id, user_id=str(current_user["_id"]))
     if not success:
-        raise HTTPException(status_code=404, detail="Energy log not found")
+        raise HTTPException(status_code=404, detail="Energy log not found or access denied")
     return {"message": "Energy log deleted"}
