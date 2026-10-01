@@ -22,20 +22,26 @@ class WaterModel:
         return await cursor.to_list(length=None)
 
     @classmethod
-    async def update(cls, record_id: str, update_data: dict):
+    async def update(cls, record_id: str, update_data: dict, user_id: str = None):
         if not ObjectId.is_valid(record_id):
             return None
         update_data["updated_at"] = datetime.now(timezone.utc)
-        await cls.get_collection().update_one(
-            {"_id": ObjectId(record_id)}, {"$set": update_data}
-        )
+        query = {"_id": ObjectId(record_id)}
+        if user_id:
+            query["user_id"] = user_id
+        result = await cls.get_collection().update_one(query, {"$set": update_data})
+        if result.matched_count == 0:
+            return None
         return await cls.get_collection().find_one({"_id": ObjectId(record_id)})
 
     @classmethod
-    async def delete(cls, record_id: str) -> bool:
+    async def delete(cls, record_id: str, user_id: str = None) -> bool:
         if not ObjectId.is_valid(record_id):
             return False
-        result = await cls.get_collection().delete_one({"_id": ObjectId(record_id)})
+        query = {"_id": ObjectId(record_id)}
+        if user_id:
+            query["user_id"] = user_id
+        result = await cls.get_collection().delete_one(query)
         return result.deleted_count > 0
 
     @classmethod

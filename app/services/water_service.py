@@ -9,8 +9,8 @@ async def log_water_usage(user_id: str, water_in: WaterCreate):
 async def get_user_water_logs(user_id: str):
     return await WaterModel.find_by_user_id(user_id)
 
-async def update_water_log(record_id: str, update_data: WaterUpdate):
-    return await WaterModel.update(record_id, update_data.model_dump(exclude_unset=True))
+async def update_water_log(record_id: str, update_data: WaterUpdate, user_id: str = None):
+    return await WaterModel.update(record_id, update_data.model_dump(exclude_unset=True), user_id=user_id)
 
-async def delete_water_log(record_id: str):
-    return await WaterModel.delete(record_id)
+async def delete_water_log(record_id: str, user_id: str = None):
+    return await WaterModel.delete(record_id, user_id=user_id)
