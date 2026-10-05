@@ -91,5 +91,43 @@ def prepare_input(features: Dict[str, float]) -> np.ndarray:
     if not features:
         raise ValueError("features must not be empty")
 
+    # FIX #20 Schema normalization: map comprehensible frontend features (Schema 1)
+    # to the actual high-importance features the model was trained on (Schema 2).
+    if "Vehicle Monthly Distance Km" not in features and "Daily_Travel_km" in features:
+        features["Vehicle Monthly Distance Km"] = float(features["Daily_Travel_km"]) * 30.0
+
+    if "Diet" not in features and "Meat_Consumption_per_week" in features:
+        # Scale meat consumption 0-14 into Diet categorical integers (roughly 1 to 4)
+        meat = float(features["Meat_Consumption_per_week"])
+        if meat > 7:
+            features["Diet"] = 1.0
+        elif meat > 3:
+            features["Diet"] = 2.0
+        elif meat > 0:
+            features["Diet"] = 3.0
+        else:
+            features["Diet"] = 4.0
+
+    if "How Long TV PC Daily Hour" not in features and "Electricity_Usage_kWh_per_month" in features:
+        # Rough translation of electric usage to the closest highly-weighted schema feature
+        features["How Long TV PC Daily Hour"] = float(features["Electricity_Usage_kWh_per_month"]) / 60.0
+
+    # Ensure other highly-weighted variables have non-zero baselines to avoid static prediction trees
+    defaults = {
+        "Frequency of Traveling by Air": 1.0,
+        "Vehicle Type": 1.0,
+        "How Many New Clothes Monthly": 2.0,
+        "Waste Bag Weekly Count": 3.0,
+        "Body Type": 1.0,
+        "Sex": 1.0,
+        "Waste Bag Size": 1.0,
+        "Monthly Grocery Bill": 200.0,
+        "Heating Energy Source": 1.0
+    }
+    
+    for k, v in defaults.items():
+        if k not in features:
+            features[k] = v
+
     row = [float(features.get(name, 0.0)) for name in FEATURE_ORDER]
     return np.array([row], dtype=np.float64)

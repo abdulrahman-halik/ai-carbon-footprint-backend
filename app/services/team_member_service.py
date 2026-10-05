@@ -7,9 +7,6 @@ from typing import List
 async def add_member(user_id: str, data: TeamMemberCreate) -> TeamMemberOut:
     member_dict = data.model_dump()
     member_dict["user_id"] = user_id
-    # Set avatar fallback
-    if not member_dict.get("avatar"):
-        member_dict["avatar"] = f"https://i.pravatar.cc/150?u={member_dict['email']}"
     doc = await TeamMemberModel.create(member_dict)
     return TeamMemberOut.from_mongo(doc)
 
