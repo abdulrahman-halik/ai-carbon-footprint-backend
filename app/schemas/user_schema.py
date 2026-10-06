@@ -26,6 +26,7 @@ class TokenData(BaseModel):
 class UserBase(BaseModel):
     is_active: Optional[bool] = False
     onboarding_completed: Optional[bool] = False
+    role: Optional[str] = "user"
     profile: Optional[dict] = {}
 
 
@@ -81,6 +82,7 @@ class UserOut(UserBase):
     id: PyObjectId = Field(..., alias="_id")
     email: EmailStr
     full_name: str
+    role: str = "user"
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -90,6 +92,7 @@ class UserOut(UserBase):
                 "_id": "60a2c8e0b6b2c2b3e4f5a6b7",
                 "email": "user@example.com",
                 "full_name": "John Doe",
+                "role": "user",
                 "is_active": False,
             }
         },
