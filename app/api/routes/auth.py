@@ -10,6 +10,9 @@ from app.schemas.user_schema import (
     UserCreate,
     UserOut,
     UserLogin,
+    VerifyOTPRequest,
+    VerifyOTPResponse,
+    LoginResponse,
 )
 from app.services.auth_service import (
     authenticate_user,
@@ -18,11 +21,14 @@ from app.services.auth_service import (
     create_user_token,
     register_user,
     request_password_reset,
+    verify_user_otp,
     InvalidPasswordError,
     UserAlreadyExistsError,
     UserNotFoundError,
     InvalidTokenError,
     PasswordMismatchError,
+    InvalidOTPError,
+    UserNotActiveError,
 )
 
 router = APIRouter()
@@ -48,8 +54,30 @@ async def register(user_in: UserCreate) -> Any:
 
 
 @router.post(
+    "/verify-otp",
+    response_model=VerifyOTPResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Verify OTP and activate account"
+)
+async def verify_otp(verify_data: VerifyOTPRequest) -> Any:
+    """Validates the OTP code for an email and activates the user account."""
+    try:
+        return await verify_user_otp(verify_data)
+    except UserNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+    except InvalidOTPError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post(
     "/login", 
-    response_model=Token,
+    response_model=LoginResponse,
     summary="User login for access token"
 )
 async def login(request: Request) -> Any:
@@ -84,7 +112,14 @@ async def login(request: Request) -> Any:
             detail=str(e)
         )
     
-    user = await authenticate_user(user_login)
+    try:
+        user = await authenticate_user(user_login)
+    except UserNotActiveError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -92,7 +127,13 @@ async def login(request: Request) -> Any:
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return await create_user_token(str(user["_id"]))
+    token = await create_user_token(str(user["_id"]))
+    return LoginResponse(
+        message="Activated successfully",
+        access_token=token.access_token,
+        token_type=token.token_type,
+        user=UserOut(**user),
+    )
 
 
 # PASSWORD MANAGEMENT
