@@ -5,6 +5,7 @@ from pydantic import (
     Field,
     BeforeValidator,
     ConfigDict,
+    model_validator,
 )
 from typing_extensions import Annotated
 
@@ -23,7 +24,7 @@ class TokenData(BaseModel):
 
 
 class UserBase(BaseModel):
-    is_active: Optional[bool] = True
+    is_active: Optional[bool] = False
     onboarding_completed: Optional[bool] = False
     profile: Optional[dict] = {}
 
@@ -89,7 +90,33 @@ class UserOut(UserBase):
                 "_id": "60a2c8e0b6b2c2b3e4f5a6b7",
                 "email": "user@example.com",
                 "full_name": "John Doe",
-                "is_active": True,
+                "is_active": False,
             }
         },
     )
+
+
+class VerifyOTPRequest(BaseModel):
+    email: EmailStr
+    otp_code: Optional[str] = None
+    otp: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_otp(self):
+        code = self.otp_code or self.otp
+        if not code:
+            raise ValueError("OTP code is required.")
+        self.otp_code = str(code).strip()
+        return self
+
+
+class VerifyOTPResponse(BaseModel):
+    message: str = "Account successfully activated."
+    is_active: bool = True
+
+
+class LoginResponse(BaseModel):
+    message: str = "Activated successfully"
+    access_token: str
+    token_type: str = "bearer"
+    user: Optional[UserOut] = None

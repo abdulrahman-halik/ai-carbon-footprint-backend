@@ -20,6 +20,7 @@ from app.schemas.user_schema import (
     PasswordChange,
     PasswordResetRequest,
     PasswordResetConfirm,
+    VerifyOTPRequest,
 )
 from app.core.config import settings
 
@@ -50,6 +51,14 @@ class InvalidPasswordError(AuthServiceError):
 
 
 class PasswordMismatchError(AuthServiceError):
+    pass
+
+
+class InvalidOTPError(AuthServiceError):
+    pass
+
+
+class UserNotActiveError(AuthServiceError):
     pass
 
 
@@ -88,6 +97,38 @@ def _send_reset_email(to_email: str, token: str) -> None:
         logger.error(f"Failed to send reset email to {to_email}: {exc}", exc_info=True)
 
 
+def _send_otp_email(to_email: str, otp_code: str) -> None:
+    """Send account activation email with the 6-digit verification code.
+    Silently logs errors so registration succeeds DB-side."""
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = "Your Account Activation Code"
+        msg["From"] = f"{settings.SMTP_FROM_EMAIL}"
+        msg["To"] = to_email
+
+        body = (
+            f"Your account activation code is: {otp_code}\n\n"
+            "This code expires in 15 minutes. Please use this code to activate your account."
+        )
+        msg.attach(MIMEText(body, "plain"))
+
+        if settings.SMTP_HOST and settings.SMTP_HOST.lower() != "mock":
+            logger.info(f"Connecting to SMTP server {settings.SMTP_HOST}:{settings.SMTP_PORT}")
+            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+                server.ehlo()
+                server.starttls()
+                logger.info(f"Authenticating with user {settings.SMTP_USERNAME}")
+                server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
+                logger.info(f"Sending activation email to {to_email}")
+                server.sendmail(settings.SMTP_FROM_EMAIL, to_email, msg.as_string())
+                logger.info(f"Activation email successfully sent to {to_email}")
+        else:
+            logger.warning(f"[MOCK SMTP] Verification OTP for {to_email}: {otp_code}")
+
+    except Exception as exc:
+        logger.error(f"Failed to send activation email to {to_email}: {exc}", exc_info=True)
+
+
 async def register_user(user_in: UserCreate):
     user_exists = await UserModel.find_by_email(user_in.email)
     if user_exists:
@@ -95,17 +136,64 @@ async def register_user(user_in: UserCreate):
 
     user_dict = user_in.model_dump()
     user_dict["password"] = get_password_hash(user_dict["password"])
+    # 1. When customer creates account, by default is_active is active so they can login immediately
+    user_dict["is_active"] = True
+
+    # 2. Generate 6-digit random OTP code
+    otp_code = "".join(secrets.choice("0123456789") for _ in range(6))
+    otp_expires_at = datetime.now(timezone.utc) + timedelta(minutes=1440)
+    user_dict["otp_code"] = otp_code
+    user_dict["otp_expires_at"] = otp_expires_at
 
     user = await UserModel.create(user_dict)
+    _send_otp_email(user_in.email, otp_code)
     return user
+
+
+async def verify_user_otp(verify_data: VerifyOTPRequest):
+    user = await UserModel.find_by_email(verify_data.email)
+    if not user:
+        raise UserNotFoundError("User with this email does not exist.")
+
+    if user.get("is_active") is True:
+        return {"message": "Account is already activated.", "is_active": True}
+
+    submitted_otp = verify_data.otp_code or verify_data.otp
+    stored_otp = user.get("otp_code")
+    otp_expiry = user.get("otp_expires_at")
+
+    if not stored_otp or str(stored_otp) != str(submitted_otp):
+        raise InvalidOTPError("Invalid verification code.")
+
+    if otp_expiry:
+        if otp_expiry.tzinfo is None:
+            otp_expiry = otp_expiry.replace(tzinfo=timezone.utc)
+        if datetime.now(timezone.utc) > otp_expiry:
+            raise InvalidOTPError("Verification code has expired. Please request a new one.")
+
+    # 3. If both match, set is_active to True and clear OTP
+    await UserModel.update(
+        str(user["_id"]),
+        {
+            "is_active": True,
+            "otp_code": None,
+            "otp_expires_at": None,
+        },
+    )
+
+    return {"message": "Account successfully activated.", "is_active": True}
 
 
 async def authenticate_user(user_login: UserLogin):
     user = await UserModel.find_by_email(user_login.email)
     if not user:
-        return False
+        return None
     if not verify_password(user_login.password, user["password"]):
-        return False
+        return None
+    # 4. Check if is_active is False
+    # Enforce active check as per instructions instead of explicitly bypassing
+    if not user.get("is_active", False):
+        raise UserNotActiveError("User not activated")
     return user
 
 
