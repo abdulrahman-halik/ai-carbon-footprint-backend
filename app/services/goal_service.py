@@ -46,7 +46,12 @@ async def _get_current_emissions_for_goal(user_id: str, goal: dict) -> float:
 
     cursor = EmissionModel.get_collection().find(query, {"value": 1})
     records = await cursor.to_list(length=None)
-    return sum(float(r.get("value", 0)) for r in records)
+    calculated_emissions = sum(float(r.get("value", 0)) for r in records)
+    
+    # Add the initial current_value set when the goal was created/edited
+    initial_current = float(goal.get("current_value", 0.0) or 0.0)
+    
+    return initial_current + calculated_emissions
 
 
 async def get_goal_progress(user_id: str):

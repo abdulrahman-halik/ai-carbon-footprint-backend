@@ -8,7 +8,7 @@ class GoalBase(BaseModel):
     target_date: Optional[datetime] = None
     is_active: bool = True
     category: str  # e.g., "Food", "Shopping", "Overall"
-    
+    current_value: float = 0.0
 
 class GoalCreate(GoalBase):
     pass
