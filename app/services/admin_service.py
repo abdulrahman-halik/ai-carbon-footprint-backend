@@ -132,8 +132,22 @@ async def get_emissions_analytics() -> Dict[str, Any]:
     """Aggregate carbon footprint metrics across all users for comparison charts."""
     db = mongodb.db
 
+    # Resolve user details first
+    user_map = {}
+    users = await UserModel.find_regular_users()
+    for u in users:
+        u_id = str(u["_id"])
+        user_map[u_id] = {
+            "name": u.get("full_name", "Unknown User"),
+            "email": u.get("email", ""),
+            "is_active": u.get("is_active", True),
+        }
+        
+    valid_user_ids = list(user_map.keys())
+
     # Per-user total emissions
     pipeline = [
+        {"$match": {"user_id": {"$in": valid_user_ids}}},
         {
             "$group": {
                 "_id": "$user_id",
@@ -145,17 +159,6 @@ async def get_emissions_analytics() -> Dict[str, Any]:
     ]
     user_emissions = await db["emissions"].aggregate(pipeline).to_list(length=None)
 
-    # Resolve user details
-    user_map = {}
-    users = await UserModel.find_regular_users()
-    for u in users:
-        u_id = str(u["_id"])
-        user_map[u_id] = {
-            "name": u.get("full_name", "Unknown User"),
-            "email": u.get("email", ""),
-            "is_active": u.get("is_active", True),
-        }
-
     user_comparison = []
     total_platform_emissions = 0.0
 
@@ -163,9 +166,8 @@ async def get_emissions_analytics() -> Dict[str, Any]:
         u_id = item["_id"]
         total_val = round(item.get("total_emissions", 0.0), 2)
         total_platform_emissions += total_val
-        details = user_map.get(
-            u_id, {"name": "Deleted / Inactive User", "email": "", "is_active": False}
-        )
+        details = user_map[u_id]
+        
         user_comparison.append(
             {
                 "user_id": u_id,
@@ -179,6 +181,7 @@ async def get_emissions_analytics() -> Dict[str, Any]:
 
     # Categories breakdown
     cat_pipeline = [
+        {"$match": {"user_id": {"$in": valid_user_ids}}},
         {"$group": {"_id": "$category", "total": {"$sum": "$value"}}},
         {"$sort": {"total": -1}},
     ]
@@ -201,7 +204,13 @@ async def get_emissions_analytics() -> Dict[str, Any]:
 async def get_water_analytics() -> Dict[str, Any]:
     """Aggregate water usage metrics across all users for charts."""
     db = mongodb.db
+    
+    users = await UserModel.find_regular_users()
+    user_map = {str(u["_id"]): u.get("full_name", "Unknown User") for u in users}
+    valid_user_ids = list(user_map.keys())
+
     pipeline = [
+        {"$match": {"user_id": {"$in": valid_user_ids}}},
         {
             "$group": {
                 "_id": "$user_id",
@@ -213,9 +222,6 @@ async def get_water_analytics() -> Dict[str, Any]:
     ]
     water_agg = await db["water_logs"].aggregate(pipeline).to_list(length=None)
 
-    users = await UserModel.find_regular_users()
-    user_map = {str(u["_id"]): u.get("full_name", "Unknown User") for u in users}
-
     comparison = []
     platform_total = 0.0
     for item in water_agg:
@@ -225,7 +231,7 @@ async def get_water_analytics() -> Dict[str, Any]:
         comparison.append(
             {
                 "user_id": u_id,
-                "name": user_map.get(u_id, "User"),
+                "name": user_map[u_id],
                 "total_water": tot,
                 "unit": "L",
                 "logs_count": item.get("logs_count", 0),
@@ -243,7 +249,13 @@ async def get_water_analytics() -> Dict[str, Any]:
 async def get_energy_analytics() -> Dict[str, Any]:
     """Aggregate energy / electricity metrics across all users for charts."""
     db = mongodb.db
+    
+    users = await UserModel.find_regular_users()
+    user_map = {str(u["_id"]): u.get("full_name", "Unknown User") for u in users}
+    valid_user_ids = list(user_map.keys())
+
     pipeline = [
+        {"$match": {"user_id": {"$in": valid_user_ids}}},
         {
             "$group": {
                 "_id": "$user_id",
@@ -255,9 +267,6 @@ async def get_energy_analytics() -> Dict[str, Any]:
     ]
     energy_agg = await db["energy_logs"].aggregate(pipeline).to_list(length=None)
 
-    users = await UserModel.find_regular_users()
-    user_map = {str(u["_id"]): u.get("full_name", "Unknown User") for u in users}
-
     comparison = []
     platform_total = 0.0
     for item in energy_agg:
@@ -267,7 +276,7 @@ async def get_energy_analytics() -> Dict[str, Any]:
         comparison.append(
             {
                 "user_id": u_id,
-                "name": user_map.get(u_id, "User"),
+                "name": user_map[u_id],
                 "total_energy": tot,
                 "unit": "kWh",
                 "logs_count": item.get("logs_count", 0),
@@ -276,6 +285,7 @@ async def get_energy_analytics() -> Dict[str, Any]:
 
     # Energy by type breakdown
     type_pipeline = [
+        {"$match": {"user_id": {"$in": valid_user_ids}}},
         {"$group": {"_id": "$energy_type", "total": {"$sum": "$value"}}},
         {"$sort": {"total": -1}},
     ]
@@ -297,9 +307,10 @@ async def get_goals_analytics() -> Dict[str, Any]:
     """Aggregate active goals and reducing goals performance across users."""
     db = mongodb.db
     users = await UserModel.find_regular_users()
+    valid_user_ids = [str(u["_id"]) for u in users]
     user_map = {str(u["_id"]): u.get("full_name", "User") for u in users}
 
-    goals_cursor = db["goals"].find({})
+    goals_cursor = db["goals"].find({"user_id": {"$in": valid_user_ids}})
     all_goals = []
     async for g in goals_cursor:
         all_goals.append(_serialize_doc(g))
