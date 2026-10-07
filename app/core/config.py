@@ -15,12 +15,9 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     GEMINI_API_KEY: str | None = None
 
-    # Email / SMTP Configuration
-    SMTP_HOST: str = "smtp.gmail.com"
-    SMTP_PORT: int = 587
-    SMTP_USERNAME: str | None = None
-    SMTP_PASSWORD: str | None = None
-    SMTP_FROM_EMAIL: str = "abdhurrahman200011@gmail.com"
+    # Email Configuration
+    RESEND_FROM_EMAIL: str = "onboarding@resend.dev"
+    RESEND_API_KEY: str | None = None
 
     # CORS — Fix #16: moved from main.py hardcode to settings
     CORS_ORIGINS: List[str] = [
