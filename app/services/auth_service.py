@@ -1,10 +1,7 @@
 from datetime import datetime, timedelta, timezone
 import secrets
-import smtplib
 import logging
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-
+import resend
 from fastapi import HTTPException, status
 
 from app.core.security import (
@@ -24,6 +21,8 @@ from app.schemas.user_schema import (
 )
 from app.core.config import settings
 
+if settings.RESEND_API_KEY:
+    resend.api_key = settings.RESEND_API_KEY
 
 class AuthServiceError(Exception):
     """Base exception for auth service."""
@@ -69,61 +68,53 @@ def _send_reset_email(to_email: str, token: str) -> None:
     """Send password reset email with the 6-digit token.
     Silently logs errors so the reset flow always succeeds DB-side."""
     try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = "Your Password Reset Code"
-        msg["From"] = f"{settings.SMTP_FROM_EMAIL}"
-        msg["To"] = to_email
-
-        body = (
-            f"Your password reset code is: {token}\n\n"
-            "This code expires in 15 minutes. If you did not request a reset, ignore this email."
-        )
-        msg.attach(MIMEText(body, "plain"))
-
-        if settings.SMTP_HOST and settings.SMTP_HOST.lower() != "mock":
-            logger.info(f"Connecting to SMTP server {settings.SMTP_HOST}:{settings.SMTP_PORT}")
-            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-                server.ehlo()
-                server.starttls()
-                logger.info(f"Authenticating with user {settings.SMTP_USERNAME}")
-                server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
-                logger.info(f"Sending email to {to_email}")
-                server.sendmail(settings.SMTP_FROM_EMAIL, to_email, msg.as_string())
-                logger.info(f"Reset email successfully sent to {to_email}")
+        if settings.RESEND_API_KEY:
+            logger.info(f"Sending reset email to {to_email} via Resend")
+            
+            html_body = f"""
+            <p>Your password reset code is: <strong>{token}</strong></p>
+            <p>This code expires in 15 minutes. If you did not request a reset, ignore this email.</p>
+            """
+            
+            params = {
+                "from": settings.RESEND_FROM_EMAIL,
+                "to": [to_email],
+                "subject": "Your Password Reset Code",
+                "html": html_body,
+            }
+            
+            email_response = resend.Emails.send(params)
+            logger.info(f"Reset email successfully sent to {to_email}. Resend ID: {email_response.get('id')}")
         else:
-            logger.warning(f"[MOCK SMTP] Reset token for {to_email}: {token}")
+            logger.warning(f"[MOCK EMAIL / NO RESEND KEY] Reset token for {to_email}: {token}")
 
     except Exception as exc:
         logger.error(f"Failed to send reset email to {to_email}: {exc}", exc_info=True)
 
 
 def _send_otp_email(to_email: str, otp_code: str) -> None:
-    """Send account activation email with the 6-digit verification code.
+    """Send account activation email with the 6-digit verification code using Resend.
     Silently logs errors so registration succeeds DB-side."""
     try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = "Your Account Activation Code"
-        msg["From"] = f"{settings.SMTP_FROM_EMAIL}"
-        msg["To"] = to_email
-
-        body = (
-            f"Your account activation code is: {otp_code}\n\n"
-            "This code expires in 15 minutes. Please use this code to activate your account."
-        )
-        msg.attach(MIMEText(body, "plain"))
-
-        if settings.SMTP_HOST and settings.SMTP_HOST.lower() != "mock":
-            logger.info(f"Connecting to SMTP server {settings.SMTP_HOST}:{settings.SMTP_PORT}")
-            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-                server.ehlo()
-                server.starttls()
-                logger.info(f"Authenticating with user {settings.SMTP_USERNAME}")
-                server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
-                logger.info(f"Sending activation email to {to_email}")
-                server.sendmail(settings.SMTP_FROM_EMAIL, to_email, msg.as_string())
-                logger.info(f"Activation email successfully sent to {to_email}")
+        if settings.RESEND_API_KEY:
+            logger.info(f"Sending activation email to {to_email} via Resend")
+            
+            html_body = f"""
+            <p>Your account activation code is: <strong>{otp_code}</strong></p>
+            <p>This code expires in 15 minutes. Please use this code to activate your account.</p>
+            """
+            
+            params = {
+                "from": settings.RESEND_FROM_EMAIL,
+                "to": [to_email],
+                "subject": "Your Account Activation Code",
+                "html": html_body,
+            }
+            
+            email_response = resend.Emails.send(params)
+            logger.info(f"Activation email successfully sent to {to_email}. Resend ID: {email_response.get('id')}")
         else:
-            logger.warning(f"[MOCK SMTP] Verification OTP for {to_email}: {otp_code}")
+            logger.warning(f"[MOCK EMAIL / NO RESEND KEY] Verification OTP for {to_email}: {otp_code}")
 
     except Exception as exc:
         logger.error(f"Failed to send activation email to {to_email}: {exc}", exc_info=True)
@@ -243,9 +234,9 @@ async def request_password_reset(reset_data: PasswordResetRequest):
 
     _send_reset_email(reset_data.email, reset_token)
 
-    if settings.SMTP_HOST and settings.SMTP_HOST.lower() == "mock":
+    if not settings.RESEND_API_KEY:
         logger.warning(
-            "Mock SMTP active — returning reset token in response for development."
+            "Mock email active — returning reset token in response for development."
         )
         return {
             "message": "Reset instructions have been sent to the email address provided.",
