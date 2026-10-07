@@ -36,18 +36,16 @@ async def get_all_regular_users() -> List[Dict[str, Any]]:
         u_dict = _serialize_doc(u)
         user_id_str = u_dict["id"]
 
-        # Aggregate total emissions for quick card display
-        pipeline = [
-            {"$match": {"user_id": user_id_str}},
-            {"$group": {"_id": None, "total": {"$sum": "$value"}, "count": {"$sum": 1}}},
-        ]
-        agg = await db["emissions"].aggregate(pipeline).to_list(length=1)
-        if agg:
-            u_dict["total_emissions"] = round(agg[0].get("total", 0.0), 2)
-            u_dict["records_count"] = agg[0].get("count", 0)
-        else:
-            u_dict["total_emissions"] = 0.0
-            u_dict["records_count"] = 0
+        # Fetch records count
+        records_count = await db["emissions"].count_documents({"user_id": user_id_str})
+        u_dict["records_count"] = records_count
+
+        # Fetch total emissions from the latest 'emissions_dashboard' record (source of truth)
+        latest_dashboard = await db["emissions"].find_one(
+            {"user_id": user_id_str, "sub_category": "emissions_dashboard"},
+            sort=[("date", -1)]
+        )
+        u_dict["total_emissions"] = round(latest_dashboard.get("value", 0.0), 2) if latest_dashboard else 0.0
 
         serialized_users.append(u_dict)
 
@@ -74,7 +72,13 @@ async def get_user_summary(user_id: str) -> Dict[str, Any]:
     ]
     cat_results = await db["emissions"].aggregate(cat_pipeline).to_list(length=None)
 
-    total_emissions = sum(item["total"] for item in cat_results)
+    # Fetch total emissions from the latest 'emissions_dashboard' record
+    latest_dashboard = await db["emissions"].find_one(
+        {"user_id": user_id, "sub_category": "emissions_dashboard"},
+        sort=[("date", -1)]
+    )
+    total_emissions = latest_dashboard.get("value", 0.0) if latest_dashboard else 0.0
+
     category_breakdown = {
         item["_id"] or "Uncategorized": round(item["total"], 2) for item in cat_results
     }
@@ -145,26 +149,32 @@ async def get_emissions_analytics() -> Dict[str, Any]:
         
     valid_user_ids = list(user_map.keys())
 
-    # Per-user total emissions
+    # Fetch all latest dashboard emissions for valid users
     pipeline = [
-        {"$match": {"user_id": {"$in": valid_user_ids}}},
-        {
-            "$group": {
-                "_id": "$user_id",
-                "total_emissions": {"$sum": "$value"},
-                "records_count": {"$sum": 1},
-            }
-        },
-        {"$sort": {"total_emissions": -1}},
+        {"$match": {"user_id": {"$in": valid_user_ids}, "sub_category": "emissions_dashboard"}},
+        {"$sort": {"date": -1}},
+        {"$group": {
+            "_id": "$user_id",
+            "latest_emission": {"$first": "$value"}
+        }}
     ]
-    user_emissions = await db["emissions"].aggregate(pipeline).to_list(length=None)
+    user_footprints = await db["emissions"].aggregate(pipeline).to_list(length=None)
+    footprint_map = {item["_id"]: item["latest_emission"] for item in user_footprints}
+    
+    # Fetch records count
+    count_pipeline = [
+        {"$match": {"user_id": {"$in": valid_user_ids}}},
+        {"$group": {"_id": "$user_id", "records_count": {"$sum": 1}}}
+    ]
+    user_counts = await db["emissions"].aggregate(count_pipeline).to_list(length=None)
+    count_map = {item["_id"]: item["records_count"] for item in user_counts}
 
     user_comparison = []
     total_platform_emissions = 0.0
 
-    for item in user_emissions:
-        u_id = item["_id"]
-        total_val = round(item.get("total_emissions", 0.0), 2)
+    for u_id in valid_user_ids:
+        total_val = round(footprint_map.get(u_id, 0.0), 2)
+        records_count = count_map.get(u_id, 0)
         total_platform_emissions += total_val
         details = user_map[u_id]
         
@@ -175,9 +185,10 @@ async def get_emissions_analytics() -> Dict[str, Any]:
                 "email": details["email"],
                 "is_active": details["is_active"],
                 "total_emissions": total_val,
-                "records_count": item.get("records_count", 0),
+                "records_count": records_count,
             }
         )
+    user_comparison.sort(key=lambda x: x["total_emissions"], reverse=True)
 
     # Categories breakdown
     cat_pipeline = [
