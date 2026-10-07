@@ -138,6 +138,8 @@ async def register_user(user_in: UserCreate):
     user_dict["password"] = get_password_hash(user_dict["password"])
     # 1. When customer creates account, by default is_active is active so they can login immediately
     user_dict["is_active"] = True
+    user_dict["role"] = "user"
+    user_dict["created_at"] = datetime.now(timezone.utc)
 
     # 2. Generate 6-digit random OTP code
     otp_code = "".join(secrets.choice("0123456789") for _ in range(6))
@@ -193,7 +195,7 @@ async def authenticate_user(user_login: UserLogin):
     # 4. Check if is_active is False
     # Enforce active check as per instructions instead of explicitly bypassing
     if not user.get("is_active", False):
-        raise UserNotActiveError("User not activated")
+        raise UserNotActiveError("Your account has been deactivated. Please contact an administrator.")
     return user
 
 
